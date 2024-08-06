@@ -14,7 +14,7 @@ class TestUserLogin:
 
         response = test_client.post('/user/login', json=user_login.to_json())
 
-        assert response.status_code == 401
+        assert response.status_code == 403
 
     def test_user_login_if_password_is_wrong(self, test_client, UserDBFactory, UserLoginFactory):
         user = UserDBFactory()
@@ -22,11 +22,11 @@ class TestUserLogin:
 
         response = test_client.post('/user/login', json=user_login.to_json())
 
-        assert response.status_code == 401
+        assert response.status_code == 403
 
     def test_user_login_if_password_and_email_are_wrong(self, test_client, UserLoginFactory):
         user_login = UserLoginFactory(email='fake@mail.com', password='123456789')
 
         response = test_client.post('/user/login', json=user_login.to_json())
 
-        assert response.status_code == 401
+        assert response.status_code == 403
