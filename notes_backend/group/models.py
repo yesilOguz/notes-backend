@@ -12,23 +12,14 @@ class GroupDBModel(NotesBaseModel):
     group_owner: Annotated[ObjectId, ObjectIdPydanticAnnotation]
     group_code: str
     group_name: str
-    attendees: list[Annotated[ObjectId, ObjectIdPydanticAnnotation]]
-    notes: list[Annotated[ObjectId, ObjectIdPydanticAnnotation]]
+    attendees: list[Annotated[ObjectId, ObjectIdPydanticAnnotation]] = []
+    notes: list[Annotated[ObjectId, ObjectIdPydanticAnnotation]] = []
 
 
 class GroupCreateModel(NotesBaseModel):
     group_owner: Optional[Annotated[ObjectId, ObjectIdPydanticAnnotation]] = None
     group_name: str
     group_code: Optional[str] = None
-    attendees: list[Annotated[ObjectId, ObjectIdPydanticAnnotation]] = []
-    notes: list[Annotated[ObjectId, ObjectIdPydanticAnnotation]] = []
-
-
-class GroupCreateResponse(NotesBaseModel):
-    id: Annotated[ObjectId, ObjectIdPydanticAnnotation]
-    group_owner: Annotated[ObjectId, ObjectIdPydanticAnnotation]
-    group_code: str
-    group_name: str
     attendees: list[Annotated[ObjectId, ObjectIdPydanticAnnotation]] = []
     notes: list[Annotated[ObjectId, ObjectIdPydanticAnnotation]] = []
 

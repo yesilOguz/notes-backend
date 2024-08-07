@@ -9,8 +9,7 @@ from fastapi_jwt import JwtAuthorizationCredentials
 from notes_backend.auth.login_utilities import access_security
 from notes_backend.collections import get_collection, Collections
 from notes_backend.core.NotesBaseModel import ObjectIdPydanticAnnotation
-from notes_backend.group.models import GroupCreateResponse, GroupCreateModel, GroupGetResponse, GroupDBModel, \
-    GroupUpdateModel
+from notes_backend.group.models import GroupCreateModel, GroupGetResponse, GroupDBModel, GroupUpdateModel
 from notes_backend.models import StatusResponse
 from notes_backend.notes.models import NotesDBModel
 from notes_backend.user.models import UserDBModel, UserType, UserGetResponseModel
@@ -76,7 +75,7 @@ def makeGroupGetResponse(group: GroupDBModel):
     )
 
 
-@router.post('/create-group', status_code=status.HTTP_201_CREATED, response_model=GroupCreateResponse)
+@router.post('/create-group', status_code=status.HTTP_201_CREATED, response_model=GroupGetResponse)
 def create_group(group: GroupCreateModel = Body(...),
                  credentials: JwtAuthorizationCredentials = Security(access_security)):
     GROUP_COLLECTION = get_collection(Collections.GROUP_COLLECTION)
@@ -105,14 +104,15 @@ def create_group(group: GroupCreateModel = Body(...),
     inserted_group_id = GROUP_COLLECTION.insert_one(group.to_mongo())
     inserted_group_collection = GROUP_COLLECTION.find_one({'_id': inserted_group_id.inserted_id})
 
-    inserted_group = GroupCreateResponse.from_mongo(inserted_group_collection)
+    inserted_group = GroupDBModel.from_mongo(inserted_group_collection)
 
     user.groups.append(inserted_group.id)
 
     USER_COLLECTION.find_one_and_update(filter={'_id': user.id},
                                         update={'$set': user.to_mongo(exclude_unset=False)})
 
-    return inserted_group
+    group_get = makeGroupGetResponse(inserted_group)
+    return group_get
 
 
 @router.post('/update-group/{group_id}', status_code=status.HTTP_200_OK, response_model=GroupGetResponse)
