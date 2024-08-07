@@ -3,6 +3,7 @@ from typing import Annotated, Optional
 from bson import ObjectId
 
 from notes_backend.core.NotesBaseModel import NotesBaseModel, ObjectIdPydanticAnnotation
+from notes_backend.notes.models import NotesGetModel
 from notes_backend.user.models import UserGetResponseModel
 
 
@@ -42,4 +43,4 @@ class GroupGetResponse(NotesBaseModel):
     group_code: str
     group_name: str
     attendees: list[UserGetResponseModel] = []
-    notes: list[Annotated[ObjectId, ObjectIdPydanticAnnotation]] = []
+    notes: list[NotesGetModel] = []

@@ -12,6 +12,7 @@ from notes_backend.core.NotesBaseModel import ObjectIdPydanticAnnotation
 from notes_backend.group.models import GroupCreateResponse, GroupCreateModel, GroupGetResponse, GroupDBModel, \
     GroupUpdateModel
 from notes_backend.models import StatusResponse
+from notes_backend.notes.models import NotesDBModel
 from notes_backend.user.models import UserDBModel, UserType, UserGetResponseModel
 
 router = APIRouter()
@@ -46,6 +47,7 @@ def generate_group_code():
 
 def makeGroupGetResponse(group: GroupDBModel):
     USER_COLLECTION = get_collection(Collections.USER_COLLECTION)
+    NOTE_COLLECTION = get_collection(Collections.NOTE_COLLECTION)
 
     owner_user_collection = USER_COLLECTION.find_one({'_id': group.group_owner})
     owner_user = UserGetResponseModel.from_mongo(owner_user_collection)
@@ -57,13 +59,20 @@ def makeGroupGetResponse(group: GroupDBModel):
 
         attendee_list.append(user)
 
+    note_list = []
+    for note_id in group.notes:
+        note_collection = NOTE_COLLECTION.find_one({'_id': note_id})
+        note = NotesDBModel.from_mongo(note_collection)
+
+        note_list.append(note)
+
     return GroupGetResponse(
         id=group.id,
         group_owner=owner_user,
         group_code=group.group_code,
         group_name=group.group_name,
         attendees=attendee_list,
-        notes=group.notes
+        notes=note_list
     )
 
 
