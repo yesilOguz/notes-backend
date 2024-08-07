@@ -17,7 +17,7 @@ from notes_backend.collections import get_collection, Collections
 router = APIRouter()
 
 
-@router.post('/user-register', status_code=status.HTTP_201_CREATED, response_model=AuthResponse)
+@router.post('/register', status_code=status.HTTP_201_CREATED, response_model=AuthResponse)
 def user_register(user: UserRegisterModel = Body(...)):
     if not re.match(Patterns.EMAIL.value, user.email):
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
