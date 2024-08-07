@@ -18,6 +18,8 @@ class UserDBModel(NotesBaseModel):
     password: str
     plan: UserType = UserType.FREE_PLAN.value
     groups: list[Annotated[ObjectId, ObjectIdPydanticAnnotation]] = []
+    notification_credit: int = 0
+    group_and_note_credit: int = 0
 
 
 class UserRegisterModel(NotesBaseModel):
@@ -29,6 +31,8 @@ class UserRegisterForTestsModel(NotesBaseModel):
     email: str
     password: str
     plan: UserType = UserType.FREE_PLAN.value
+    notification_credit: int = 0
+    group_and_note_credit: int = 0
 
 
 class UserLoginModel(NotesBaseModel):
@@ -41,3 +45,5 @@ class UserGetResponseModel(NotesBaseModel):
     email: str
     plan: UserType = UserType.FREE_PLAN.value
     groups: list[Annotated[ObjectId, ObjectIdPydanticAnnotation]] = []
+    notification_credit: int = 0
+    group_and_note_credit: int = 0
