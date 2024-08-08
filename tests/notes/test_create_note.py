@@ -22,7 +22,7 @@ class TestCreateNote:
         login_headers = login(user)
         response = test_client.post(f'/note/create-note/{group.group_code}', json=note_model.to_json(), headers=login_headers)
 
-        assert response.status_code == 403
+        assert response.status_code == 400
 
     def test_create_note_if_user_has_notification_credits(self, test_client, UserDBFactory, GroupDBModelFactory, NoteCreateModelFactory, login):
         user = UserDBFactory(notification_credit=1)
@@ -33,7 +33,7 @@ class TestCreateNote:
         login_headers = login(user)
         response = test_client.post(f'/note/create-note/{group.group_code}', json=note_model.to_json(), headers=login_headers)
 
-        assert response.status_code == 403
+        assert response.status_code == 400
 
     def test_create_note_if_user_has_no_credit_but_user_in_paid_plan(self, test_client, UserDBFactory, GroupDBModelFactory, NoteCreateModelFactory, login):
         user = UserDBFactory(plan=UserType.PAID_PLAN)
