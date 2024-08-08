@@ -27,7 +27,7 @@ def create_note(group_code: str, note: NotesCreateModel = Body(...),
     user = UserDBModel.from_mongo(user_collection)
 
     if user.group_and_note_credit == 0 and user.plan == UserType.FREE_PLAN.value:
-        raise HTTPException(status.HTTP_403_FORBIDDEN,
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             detail='not oluşturmak için yeterli krediniz yok')
 
     group_collection = GROUP_COLLECTION.find_one({'group_code': group_code})
@@ -40,6 +40,12 @@ def create_note(group_code: str, note: NotesCreateModel = Body(...),
     if user.id not in group.attendees:
         raise HTTPException(status.HTTP_403_FORBIDDEN,
                             detail='bu gruba üye değilsiniz')
+
+    if user.plan == UserType.FREE_PLAN.value:
+        user.group_and_note_credit -= 1
+
+        USER_COLLECTION.find_one_and_update(filter={'_id': user.id},
+                                            update={'$set': user.to_mongo(exclude_unset=False)})
 
     note.group_id = group.id
     inserted_note = NOTE_COLLECTION.insert_one(note.to_mongo())
