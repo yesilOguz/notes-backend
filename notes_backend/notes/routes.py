@@ -53,6 +53,8 @@ def create_note(group_code: str, note: NotesCreateModel = Body(...),
     inserted = NotesGetModel.from_mongo(inserted_collection)
 
     group.notes.append(inserted.id)
+    GROUP_COLLECTION.find_one_and_update(filter={'_id': group.id},
+                                         update={'$set': group.to_mongo(exclude_unset=False)})
 
     return inserted
 

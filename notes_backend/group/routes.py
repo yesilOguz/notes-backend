@@ -11,7 +11,7 @@ from notes_backend.collections import get_collection, Collections
 from notes_backend.core.NotesBaseModel import ObjectIdPydanticAnnotation
 from notes_backend.group.models import GroupCreateModel, GroupGetResponse, GroupDBModel, GroupUpdateModel
 from notes_backend.models import StatusResponse
-from notes_backend.notes.models import NotesDBModel
+from notes_backend.notes.models import NotesGetModel
 from notes_backend.user.models import UserDBModel, UserType, UserGetResponseModel
 
 router = APIRouter()
@@ -61,7 +61,7 @@ def makeGroupGetResponse(group: GroupDBModel):
     note_list = []
     for note_id in group.notes:
         note_collection = NOTE_COLLECTION.find_one({'_id': note_id})
-        note = NotesDBModel.from_mongo(note_collection)
+        note = NotesGetModel.from_mongo(note_collection)
 
         note_list.append(note)
 
