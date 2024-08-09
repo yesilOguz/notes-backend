@@ -7,7 +7,7 @@ from notes_backend.auth.login_utilities import auth
 from notes_backend.collections import get_collection, Collections
 from notes_backend.core.mongo_database import MONGO
 from notes_backend.group.models import GroupCreateModel, GroupDBModel
-from notes_backend.user.models import UserRegisterModel, UserDBModel, UserRegisterForTestsModel, UserType
+from notes_backend.user.models import UserDBModel, UserRegisterForTestsModel, UserType
 
 Faker.seed(3)
 faker = Faker()

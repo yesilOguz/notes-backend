@@ -50,6 +50,7 @@ class OID(str):
 class NotesBaseModel(BaseModel):
     model_config = ConfigDict(
         use_enum_values=True,
+        arbitrary_types_allowed=True,
         json_encoders={
             ObjectId: lambda oid: str(oid),
         })
@@ -60,6 +61,13 @@ class NotesBaseModel(BaseModel):
             return data
 
         id = data.pop('_id', None)
+
+        return cls(**dict(data, id=id))
+
+    @classmethod
+    def from_json(cls, data: dict):
+        if not data:
+            return data
 
         return cls(**dict(data, id=id))
 
