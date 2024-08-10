@@ -1,12 +1,16 @@
 from typing import Annotated
 
 from bson import ObjectId
-from fastapi import APIRouter, WebSocketException, status, WebSocket
+from fastapi import APIRouter, WebSocketException, status, WebSocket, Security, HTTPException, Body
+from fastapi_jwt import JwtAuthorizationCredentials
 
+from notes_backend.auth.login_utilities import access_security
 from notes_backend.collections import get_collection, Collections
 from notes_backend.core.NotesBaseModel import ObjectIdPydanticAnnotation
 from notes_backend.core.websocket.connection_manager import manager, Client
 from notes_backend.group.models import GroupDBModel
+from notes_backend.models import StatusResponse
+from notes_backend.user.models import UserDBModel, UserType
 
 from notes_backend.websocket.models import WebsocketAction, SendNotificationActionModel, SendNotificationToClientModel
 
@@ -56,3 +60,38 @@ async def websocket_endpoint(websocket: WebSocket,
     while True:
         data = await websocket.receive_json()
         await socket_message_handler(client, data)
+
+
+@router.get('/get-current-users', status_code=status.HTTP_200_OK, response_model=list[Client])
+def get_current_user_count(credentials: JwtAuthorizationCredentials = Security(access_security)):
+    USER_COLLECTION = get_collection(Collections.USER_COLLECTION)
+
+    user_id = ObjectId(credentials.subject['id'])
+
+    user_collection = USER_COLLECTION.find_one({'_id': user_id})
+    user = UserDBModel.from_mongo(user_collection)
+
+    if user.plan != UserType.ADMIN_USER.value:
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            detail='yetkin yok!')
+
+    return manager.active_connections
+
+
+@router.post('/send-notification', status_code=status.HTTP_200_OK, response_model=StatusResponse)
+def send_notification(send_notification_model: SendNotificationToClientModel = Body(...),
+                      credentials: JwtAuthorizationCredentials = Security(access_security)):
+    USER_COLLECTION = get_collection(Collections.USER_COLLECTION)
+
+    user_id = ObjectId(credentials.subject['id'])
+
+    user_collection = USER_COLLECTION.find_one({'_id': user_id})
+    user = UserDBModel.from_mongo(user_collection)
+
+    if user.plan != UserType.ADMIN_USER.value:
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            detail='yetkin yok!')
+
+    manager.broadcast(message=send_notification_model.to_json())
+
+    return StatusResponse(status=True)

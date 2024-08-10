@@ -10,6 +10,7 @@ class UserType(Enum):
     FREE_PLAN = 'freeplan'
     PAID_PLAN = 'paidplan'
     FAMILY_PLAN = 'familyplan'
+    ADMIN_USER = 'adminuser'
 
 
 class UserDBModel(NotesBaseModel):
