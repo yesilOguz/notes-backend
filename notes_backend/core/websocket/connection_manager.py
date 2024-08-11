@@ -29,21 +29,21 @@ class ConnectionManager:
 
         self.active_connections.remove(will_remove_user)
 
-    async def send_personal_message(self, message: str, user_id: ObjectId):
+    async def send_personal_message(self, message: any, user_id: ObjectId):
         for user in self.active_connections:
             if user.user_id == user_id:
                 await user.connection.send_json(message)
                 break
 
-    async def send_group_message(self, message: str, group: GroupDBModel, except_id: Optional[ObjectId] = None):
+    async def send_group_message(self, message: any, group: GroupDBModel, except_id: Optional[ObjectId] = None):
         for user in self.active_connections:
             if user.user_id in group.attendees and user.user_id != except_id:
-                await user.connection.send_text(message)
+                await user.connection.send_json(message)
                 break
 
-    async def broadcast(self, message: str):
+    async def broadcast(self, message: any):
         for connection in self.active_connections:
-            await connection.connection.send_text(message)
+            await connection.connection.send_json(message)
 
 
 manager = ConnectionManager()
