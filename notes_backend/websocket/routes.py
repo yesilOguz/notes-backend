@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from bson import ObjectId
-from fastapi import APIRouter, WebSocketException, status, WebSocket, Security, HTTPException, Body
+from fastapi import APIRouter, WebSocketDisconnect, WebSocketException, status, WebSocket, Security, HTTPException, Body
 from fastapi_jwt import JwtAuthorizationCredentials
 
 from notes_backend.auth.login_utilities import access_security
@@ -10,7 +10,7 @@ from notes_backend.core.NotesBaseModel import ObjectIdPydanticAnnotation
 from notes_backend.core.websocket.connection_manager import manager, Client
 from notes_backend.group.models import GroupDBModel
 from notes_backend.models import StatusResponse
-from notes_backend.user.models import UserDBModel, UserType
+from notes_backend.user.models import UserDBModel, UserType, UserGetResponseModel
 
 from notes_backend.websocket.models import WebsocketAction, SendNotificationActionModel, SendNotificationToClientModel
 
@@ -38,6 +38,7 @@ async def socket_message_handler(client: Client, message: any):
 
         send_notification_to_client_model = SendNotificationToClientModel(sender_id=client.user_id,
                                                                           group_id=send_notification_model.group_id,
+                                                                          group_name=check_group.group_name,
                                                                           content=send_notification_model.content)
         for user_id in send_notification_model.user_ids:
             await manager.send_personal_message(send_notification_to_client_model.to_json(), user_id)
@@ -57,12 +58,15 @@ async def websocket_endpoint(websocket: WebSocket,
     client = Client(user_id=user_id, connection=websocket)
     await manager.connect(client=client)
 
-    while True:
-        data = await websocket.receive_json()
-        await socket_message_handler(client, data)
+    try:
+        while True:
+            data = await websocket.receive_json()
+            await socket_message_handler(client, data)
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 
-@router.get('/get-current-users', status_code=status.HTTP_200_OK, response_model=list[Client])
+@router.get('/get-current-users', status_code=status.HTTP_200_OK, response_model=list[UserGetResponseModel])
 def get_current_user_count(credentials: JwtAuthorizationCredentials = Security(access_security)):
     USER_COLLECTION = get_collection(Collections.USER_COLLECTION)
 
@@ -75,11 +79,18 @@ def get_current_user_count(credentials: JwtAuthorizationCredentials = Security(a
         raise HTTPException(status.HTTP_403_FORBIDDEN,
                             detail='yetkin yok!')
 
-    return manager.active_connections
+    active_clients = manager.active_connections
+    active_users = []
+    for client in active_clients:
+        client_user_collection = USER_COLLECTION.find_one({'_id': client.user_id})
+        client_user = UserGetResponseModel.from_mongo(client_user_collection)
+        active_users.append(client_user)
+
+    return active_users
 
 
 @router.post('/send-notification', status_code=status.HTTP_200_OK, response_model=StatusResponse)
-def send_notification(send_notification_model: SendNotificationToClientModel = Body(...),
+async def send_notification(send_notification_model: SendNotificationToClientModel = Body(...),
                       credentials: JwtAuthorizationCredentials = Security(access_security)):
     USER_COLLECTION = get_collection(Collections.USER_COLLECTION)
 
@@ -92,6 +103,6 @@ def send_notification(send_notification_model: SendNotificationToClientModel = B
         raise HTTPException(status.HTTP_403_FORBIDDEN,
                             detail='yetkin yok!')
 
-    manager.broadcast(message=send_notification_model.to_json())
+    await manager.broadcast(message=send_notification_model.to_json())
 
     return StatusResponse(status=True)

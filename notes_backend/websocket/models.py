@@ -24,4 +24,5 @@ class SendNotificationToClientModel(NotesBaseModel):
     action: str = WebsocketAction.SEND_NOTIFICATION.value
     sender_id: Optional[Annotated[ObjectId, ObjectIdPydanticAnnotation]] = None
     group_id: Optional[Annotated[ObjectId, ObjectIdPydanticAnnotation]] = None
+    group_name: Optional[str] = None
     content: str
