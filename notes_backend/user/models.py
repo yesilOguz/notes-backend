@@ -28,6 +28,12 @@ class UserRegisterModel(NotesBaseModel):
     password: str
 
 
+class AdminRegisterModel(NotesBaseModel):
+    email: str
+    password: str
+    plan: UserType = UserType.ADMIN_USER.value
+
+
 class UserRegisterForTestsModel(NotesBaseModel):
     email: str
     password: str

@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, status, APIRouter
+
+from db_utilities import create_system_admins
 from notes_backend.core.mongo_database import MONGO
 
 from notes_backend.user.routes import router as user_router
@@ -25,6 +27,8 @@ async def lifespan(app: FastAPI):
     app.database = MONGO.get_db()
     yield
     MONGO.shutdown_db()
+
+create_system_admins()
 
 app = FastAPI(lifespan=lifespan)
 
