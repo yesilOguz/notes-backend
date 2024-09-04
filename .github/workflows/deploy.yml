@@ -62,7 +62,7 @@ jobs:
           fi
 
           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          docker stop nnotes-backend || true
-          docker rm nnotes-backend || true
-          docker run -p 5005:8000 --env-file ~/env.list -d --name nnotes-backend ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker stop yesiloguz/nnotes-backend || true
+          docker rm yesiloguz/nnotes-backend || true
+          docker run -p 5005:8000 --env-file ~/env.list -d --name yesilgouz/nnotes-backend ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         EOF
