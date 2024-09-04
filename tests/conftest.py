@@ -22,8 +22,11 @@ def test_client():
 
 @pytest.fixture()
 def UserDBFactory():
-    def _func(email=faker.email(), password=faker.password(), plan: UserType = UserType.FREE_PLAN,
+    def _func(email=None, password=faker.password(), plan: UserType = UserType.FREE_PLAN,
               notification_credit: int = 0, group_and_note_credit: int = 0):
+        if email is None:
+            email = faker.email()
+
         register_model = UserRegisterForTestsModel(email=email, password=password, plan=plan.value,
                                                    notification_credit=notification_credit,
                                                    group_and_note_credit=group_and_note_credit)

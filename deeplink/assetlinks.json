@@ -1,0 +1,11 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.nesdzo.nnotes",
+      "sha256_cert_fingerprints":
+        ["26:D1:A2:D0:86:BB:D0:F4:11:10:AF:BF:F3:24:85:45:A6:C8:6D:75:C5:C6:50:FF:F2:15:63:AB:EA:8A:CB:51"]
+    }
+  }
+]

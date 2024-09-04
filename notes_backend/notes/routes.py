@@ -6,16 +6,17 @@ from fastapi_jwt import JwtAuthorizationCredentials
 from notes_backend.auth.login_utilities import access_security
 from notes_backend.collections import get_collection, Collections
 from notes_backend.core.NotesBaseModel import ObjectIdPydanticAnnotation
+from notes_backend.core.websocket.connection_manager import manager
 from notes_backend.group.models import GroupDBModel
 from notes_backend.models import StatusResponse
-from notes_backend.notes.models import NotesGetModel, NotesCreateModel, NotesDBModel
+from notes_backend.notes.models import NotesGetModel, NotesCreateModel, NotesCreateResponse, NoteSaveModel
 from notes_backend.user.models import UserDBModel, UserType
 
 router = APIRouter()
 
 
 @router.post('/create-note/{group_code}', status_code=status.HTTP_201_CREATED, response_model=NotesGetModel)
-def create_note(group_code: str, note: NotesCreateModel = Body(...),
+async def create_note(group_code: str, note: NotesCreateModel = Body(...),
                 credentials: JwtAuthorizationCredentials = Security(access_security)):
     GROUP_COLLECTION = get_collection(Collections.GROUP_COLLECTION)
     USER_COLLECTION = get_collection(Collections.USER_COLLECTION)
@@ -50,13 +51,49 @@ def create_note(group_code: str, note: NotesCreateModel = Body(...),
     note.group_id = group.id
     inserted_note = NOTE_COLLECTION.insert_one(note.to_mongo())
     inserted_collection = NOTE_COLLECTION.find_one({'_id': inserted_note.inserted_id})
+
     inserted = NotesGetModel.from_mongo(inserted_collection)
+    to_send_via_websocket = NotesCreateResponse.from_mongo(inserted.to_mongo())
+    to_send_via_websocket.group_name = group.group_name
 
     group.notes.append(inserted.id)
     GROUP_COLLECTION.find_one_and_update(filter={'_id': group.id},
                                          update={'$set': group.to_mongo(exclude_unset=False)})
 
+    await manager.send_group_message(to_send_via_websocket.to_json(), group, user.id)
     return inserted
+
+
+@router.post('/save-note/{group_id}/note/{note_id}', status_code=status.HTTP_200_OK, response_model=StatusResponse)
+def save_note(group_id: Annotated[ObjectId, ObjectIdPydanticAnnotation],
+            note_id: Annotated[ObjectId, ObjectIdPydanticAnnotation],
+            note: NoteSaveModel = Body(...),
+            credentials: JwtAuthorizationCredentials = Security(access_security)):
+
+    GROUP_COLLECTION = get_collection(Collections.GROUP_COLLECTION)
+    NOTE_COLLECTION = get_collection(Collections.NOTE_COLLECTION)
+
+    user_id = ObjectId(credentials.subject['id'])
+
+    group_collection = GROUP_COLLECTION.find_one({'_id': group_id})
+    group = GroupDBModel.from_mongo(group_collection)
+
+    if not group:
+        raise HTTPException(status.HTTP_404_NOT_FOUND,
+                            detail='grup bulunamadı')
+
+    if note_id not in group.notes:
+        raise HTTPException(status.HTTP_404_NOT_FOUND,
+                            detail='not bulunumadı')
+
+    if user_id not in group.attendees:
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            detail='bu nota erişiminiz yoktur')
+
+    NOTE_COLLECTION.find_one_and_update(filter={'_id': note_id},
+                                        update={'$set': note.to_mongo()})
+
+    return StatusResponse(status=True)
 
 
 @router.get('/get-note/{group_id}/note/{note_id}', status_code=status.HTTP_200_OK, response_model=NotesGetModel)

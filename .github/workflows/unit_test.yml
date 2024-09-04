@@ -1,0 +1,53 @@
+name: Unit Tests
+
+on: [pull_request, push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+      fail-fast: false
+
+    services:
+      mongodb:
+        image: mongo:6.0.4
+        env:
+          MONGO_INITDB_DATABASE: nnotes_backend_test_database
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: admin
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-3.11-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+      - name: Test Code
+        run: poetry run pytest
+        env:
+          PYTHONDONTWRITEBYTECODE: 1
+          PYTHONUNBUFFERED: 1
+          APP_MODE: TEST
+          MONGO_HOST: localhost
+          MONGO_PORT: 27017
+          MONGO_USER: admin
+          MONGO_PASS: admin
+          MONGO_DB: nnotes_backend_test_database
+          MONGO_COLLECTION: nnotes_backend_test_database_collection
+          MONGO_URL: mongodb://admin:admin@127.0.0.1:27017/?retryWrites=true&w=majority
+          SECRET: test_secret

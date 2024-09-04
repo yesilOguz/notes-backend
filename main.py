@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from sys import prefix
 
 from fastapi import FastAPI, status, APIRouter
 
@@ -10,6 +11,7 @@ from notes_backend.group.routes import router as group_router
 from notes_backend.notes.routes import router as notes_router
 from notes_backend.health.routes import router as health_router
 from notes_backend.websocket.routes import router as websocket_router
+from notes_backend.deeplinking.routes import router as deeplink_router
 
 router = APIRouter()
 
@@ -38,3 +40,4 @@ app.include_router(group_router, prefix='/group')
 app.include_router(notes_router, prefix='/note')
 app.include_router(health_router, prefix='/health')
 app.include_router(websocket_router, prefix='/websocket')
+app.include_router(deeplink_router, prefix='/.well-known')
