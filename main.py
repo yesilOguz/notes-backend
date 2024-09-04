@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI):
 
 create_system_admins()
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, docs_url=None)
 
 app.include_router(router)
 app.include_router(user_router, prefix='/user')
