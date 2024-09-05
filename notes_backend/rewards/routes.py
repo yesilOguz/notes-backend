@@ -72,8 +72,14 @@ async def ssv(request: Request):
     except Exception as e:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail='Invalid signature')
 
+    print(user_id)
+    print(type(user_id))
+
     check_user_collection = USER_COLLECTION.find_one({'_id': user_id})
     check_user = UserDBModel.from_mongo(check_user_collection)
+
+    print(check_user_collection)
+    print(check_user)
 
     if not check_user:
         raise HTTPException(status.HTTP_404_NOT_FOUND,
