@@ -146,7 +146,7 @@ def send_forgot_otp(email: str):
                                  otp_type=OTP_TYPES.PASSWORD_RESET)
 
     OTP_COLLECTION.insert_one(new_otp.to_mongo())
-    try_send_mail = EmailService.send_email(email, EmailService.generate_otp_content(generated_code, new_otp.otp_type))
+    try_send_mail = EmailService.send_email(email, EmailService.generate_otp_content(generated_code, new_otp.otp_type), 'NNotes forgot password')
 
     return StatusResponse(status=try_send_mail)
 
@@ -235,7 +235,7 @@ def send_delete_account_otp(email: str):
                                  otp_type=OTP_TYPES.REMOVE_ACC)
 
     OTP_COLLECTION.insert_one(new_otp.to_mongo())
-    try_send_mail = EmailService.send_email(email, EmailService.generate_otp_content(generated_code, new_otp.otp_type))
+    try_send_mail = EmailService.send_email(email, EmailService.generate_otp_content(generated_code, new_otp.otp_type), 'NNotes delete account')
 
     return StatusResponse(status=try_send_mail)
 
