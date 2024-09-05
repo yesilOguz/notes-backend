@@ -51,3 +51,5 @@ jobs:
           MONGO_COLLECTION: nnotes_backend_test_database_collection
           MONGO_URL: mongodb://admin:admin@127.0.0.1:27017/?retryWrites=true&w=majority
           SECRET: test_secret
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASS: ${{ secrets.ADMIN_PASS }}
