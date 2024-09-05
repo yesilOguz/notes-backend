@@ -70,12 +70,8 @@ async def websocket_endpoint(websocket: WebSocket,
                              user_id: Annotated[ObjectId, ObjectIdPydanticAnnotation]):
     USER_COLLECTION = get_collection(Collections.USER_COLLECTION)
 
-    print(user_id)
     check_user_collection = USER_COLLECTION.find_one({'_id': user_id})
     check_user = UserDBModel.from_mongo(check_user_collection)
-
-    print(check_user_collection)
-    print(check_user)
 
     if not check_user:
         raise WebSocketException(code=status.HTTP_404_NOT_FOUND,

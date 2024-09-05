@@ -1,13 +1,17 @@
 from notes_backend.collections import get_collection, Collections
 from notes_backend.user.models import AdminRegisterModel
 import hashlib
+import os
+
+admin_email = os.getenv('ADMIN_EMAIL')
+admin_password = os.getenv('ADMIN_PASS')
 
 
 def create_system_admins():
     admins = [
         AdminRegisterModel(
-            email='admin@system.com',
-            password=hashlib.md5('admin'.encode()).hexdigest()
+            email=admin_email,
+            password=hashlib.md5(admin_password.encode()).hexdigest()
         )
     ]
 
