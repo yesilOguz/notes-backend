@@ -1,7 +1,10 @@
+from notes_backend.user.otp_types import OTP_TYPES
+
+
 class TestCheckOtp:
     def test_check_otp(self, test_client, UserDBFactory, OtpDBFactory):
         user = UserDBFactory()
-        otp = OtpDBFactory(user_id=user.id, email=user.email)
+        otp = OtpDBFactory(user_id=user.id, otp_type=OTP_TYPES.PASSWORD_RESET)
 
         response = test_client.get(f'/user/check-otp/{user.email}/{otp.otp_code}')
 
