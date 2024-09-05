@@ -53,3 +53,5 @@ jobs:
           SECRET: test_secret
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PASS: ${{ secrets.ADMIN_PASS }}
+          EMAIL: ${{ secrets.EMAIL }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}

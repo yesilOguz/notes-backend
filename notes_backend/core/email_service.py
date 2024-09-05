@@ -3,9 +3,10 @@ import os
 import smtplib
 import email
 
-from ganesha.user.otp_types import OTP_TYPES
+from notes_backend.core import DELETE_ACCOUNT_OTP_URL
+from notes_backend.user.otp_types import OTP_TYPES
 
-smtpPort = 587
+smtpPort = 465
 
 
 class EmailService:
@@ -19,7 +20,7 @@ class EmailService:
         msg['To'] = to_mail
         msg['Subject'] = content
 
-        smtp = smtplib.SMTP('smtp-mail.outlook.com', smtpPort)
+        smtp = smtplib.SMTP('mt-cressi.guzelhosting.com', smtpPort)
 
         try:
             smtp.ehlo()
@@ -37,5 +38,8 @@ class EmailService:
     def generate_otp_content(otp_code: str, otp_code_type: OTP_TYPES):
         if otp_code_type == OTP_TYPES.PASSWORD_RESET:
             return f'Your password reset code is > {otp_code} < unless you did this, please ignore this email!'
+        if otp_code_type == OTP_TYPES.REMOVE_ACC:
+            link = f'{DELETE_ACCOUNT_OTP_URL}/{otp_code}'
+            return f'If you are sure you want to delete your account, you can complete the process by clicking the link. > {link} <'
 
         return f'Your code is > {otp_code} <'

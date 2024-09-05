@@ -7,6 +7,7 @@ class Collections(Enum):
     USER_COLLECTION = 'user'
     GROUP_COLLECTION = 'group'
     NOTE_COLLECTION = 'notes'
+    OTP_COLLECTION = 'otp'
 
 
 def get_collection(collection_name: Collections):

@@ -1,9 +1,11 @@
+import datetime
 from typing import Annotated
 
 from bson import ObjectId
 from enum import Enum
 
 from notes_backend.core.NotesBaseModel import NotesBaseModel, ObjectIdPydanticAnnotation
+from notes_backend.user.otp_types import OTP_TYPES
 
 
 class UserType(Enum):
@@ -47,6 +49,10 @@ class UserLoginModel(NotesBaseModel):
     password: str
 
 
+class UserRenewPassword(NotesBaseModel):
+    password: str
+
+
 class UserGetResponseModel(NotesBaseModel):
     id: Annotated[ObjectId, ObjectIdPydanticAnnotation]
     email: str
@@ -54,3 +60,20 @@ class UserGetResponseModel(NotesBaseModel):
     groups: list[Annotated[ObjectId, ObjectIdPydanticAnnotation]] = []
     notification_credit: int = 0
     group_and_note_credit: int = 0
+
+
+class UserOTPModel(NotesBaseModel):
+    id: Annotated[ObjectId, ObjectIdPydanticAnnotation]
+    requested_by: Annotated[ObjectId, ObjectIdPydanticAnnotation]
+    created_time: datetime.datetime
+    end_time: datetime.datetime
+    otp_code: str
+    otp_type: OTP_TYPES
+
+
+class UserOTPCreateModel(NotesBaseModel):
+    requested_by: Annotated[ObjectId, ObjectIdPydanticAnnotation]
+    created_time: datetime.datetime
+    end_time: datetime.datetime
+    otp_code: str
+    otp_type: OTP_TYPES
