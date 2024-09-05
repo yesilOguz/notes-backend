@@ -19,7 +19,7 @@ router = APIRouter()
 
 @router.get('/', status_code=status.HTTP_200_OK, response_model=dict)
 def main():
-    return {'nnotes': '0.0.4b'}
+    return {'nnotes': '0.0.5b'}
 
 
 @asynccontextmanager

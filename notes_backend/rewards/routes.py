@@ -1,9 +1,7 @@
 from fastapi import APIRouter, Request, HTTPException, status
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes, serialization
 import base64
-import os
 import requests
 
 from notes_backend.models import StatusResponse
@@ -28,8 +26,7 @@ async def groups_ssv(request: Request):
         google_public_key.verify(
             base64.b64decode(signature),
             signed_data.encode(),
-            padding.PKCS1v15(),
-            hashes.SHA256()
+            ec.ECDSA(hashes.SHA256())
         )
 
         print('başarılı')
