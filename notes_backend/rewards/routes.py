@@ -18,7 +18,7 @@ async def groups_ssv(request: Request):
     pem_response_json = pem_response.json()
     pem = pem_response_json['keys'][0]['pem']
 
-    params = await request.json()
+    params = request.query_params
     google_public_key = serialization.load_pem_public_key(pem.encode())
 
     signature = params.get("signature")
