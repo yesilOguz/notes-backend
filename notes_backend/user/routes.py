@@ -16,7 +16,7 @@ from notes_backend.core.email_service import EmailService
 from notes_backend.models import StatusResponse
 from notes_backend.patterns import Patterns
 from notes_backend.user.models import UserRegisterModel, UserLoginModel, UserDBModel, UserGetResponseModel, \
-    UserOTPCreateModel, UserOTPModel, UserRenewPassword
+    UserOTPCreateModel, UserOTPModel, UserRenewPassword, UserType
 from notes_backend.collections import get_collection, Collections
 from notes_backend.user.otp_types import OTP_TYPES
 
@@ -267,3 +267,40 @@ def confirm_to_delete(email: str, otp_code: str):
     OTP_COLLECTION.find_one_and_delete({'_id': check_otp_correction.id})
 
     return StatusResponse(status=True)
+
+
+@router.get('/change-plan/{email}/{plan_name}', status_code=status.HTTP_200_OK, response_model=StatusResponse)
+def change_plan(email: str, plan_name: str,
+                credentials: JwtAuthorizationCredentials = Security(access_security)):
+    if not re.match(Patterns.EMAIL.value, email):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            detail='email is not correct')
+
+    if plan_name not in [e.value for e in UserType]:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            detail='there is no plan with this plan name')
+
+    USER_COLLECTION = get_collection(Collections.USER_COLLECTION)
+
+    user_id = ObjectId(credentials.subject['id'])
+
+    check_user_collection = USER_COLLECTION.find_one({'_id': user_id})
+    check_user = UserDBModel.from_mongo(check_user_collection)
+
+    if check_user.plan != UserType.ADMIN_USER.value:
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            detail='you are not allowed to do this')
+
+    will_change_user_collection = USER_COLLECTION.find_one({'email': email})
+    will_change_user = UserDBModel.from_mongo(will_change_user_collection)
+
+    if not will_change_user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND,
+                            detail='there is no user with this email')
+
+    will_change_user.plan = UserType(plan_name)
+    USER_COLLECTION.find_one_and_update(filter={'_id': will_change_user.id},
+                                        update={'$set': will_change_user.to_mongo(exclude_unset=False)})
+
+    return StatusResponse(status=True)
+
