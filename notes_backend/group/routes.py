@@ -47,16 +47,29 @@ def generate_group_code():
 def makeGroupGetResponse(group: GroupDBModel):
     USER_COLLECTION = get_collection(Collections.USER_COLLECTION)
     NOTE_COLLECTION = get_collection(Collections.NOTE_COLLECTION)
+    GROUP_COLLECTION = get_collection(Collections.GROUP_COLLECTION)
 
     owner_user_collection = USER_COLLECTION.find_one({'_id': group.group_owner})
     owner_user = UserGetResponseModel.from_mongo(owner_user_collection)
 
     attendee_list = []
+    will_remove_list = []
     for attendee in group.attendees:
         user_collection = USER_COLLECTION.find_one({'_id': attendee})
         user = UserGetResponseModel.from_mongo(user_collection)
 
+        if not user:
+            will_remove_list.append(attendee)
+            continue
+
         attendee_list.append(user)
+
+    if len(will_remove_list) > 0:
+        for will_remove in will_remove_list:
+            group.attendees.remove(will_remove)
+
+        GROUP_COLLECTION.find_one_and_update(filter={'_id': group.id},
+                                             update={'$set': group.to_mongo(exclude_unset=False)})
 
     note_list = []
     for note_id in group.notes:
